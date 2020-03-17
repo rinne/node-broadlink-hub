@@ -1,0 +1,170 @@
+* {
+  font-family: sans-serif;
+}
+div.title {
+  width: 100%;
+  text-align: center;
+  font-size: 3em;
+  font-weight: bold;
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+div.name {
+  width: 100%;
+  text-align: center;
+  font-size: 1.75em;
+  font-weight: bold;
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+div.subtitle {
+  width: 100%;
+  text-align: left;
+  font-size: 1.5em;
+  font-weight: bold;
+  margin-top: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.connection-status {
+}
+
+.connection-status-action-link {
+}
+
+.copyright {
+  display: block;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  padding: 0.25rem;
+  font-size: 1.25em;
+  font-weight: bold;
+  text-decoration: none;
+  text-align: center;
+  justify-content: center;
+  color: #ddd;
+  cursor: pointer;
+}
+
+.connection-action-label {
+  display: block;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  justify-content: center;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 1rem;
+  width: 130px;
+}
+
+.connection-disabled-action-label {
+  display: block;
+  background-color: #ddd;
+  color: #000;
+  text-align: center;
+  justify-content: center;
+  font-weight: bold;
+  padding: 1rem;
+  width: 130px;
+}
+
+.log-debug-checkbox {
+  margin-top: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.log-debug-checkbox-label {
+    display: inline;
+    font-family: "Courier New", "Courier", monospace;
+    font-size: 0.70em;
+}
+
+.log {
+    font-family: "Courier New", "Courier", monospace;
+    font-size: 0.75em;
+}
+
+.device {
+  display: flex;
+  flex-wrap: wrap;
+  background: #ddd;
+  padding: 1rem;
+  border-radius: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.device .device-name {
+  width: 100%;
+  font-size: 1.5em;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.device .device-properties {
+  flex-grow: 1;
+  padding: 1rem;
+  background-color: #efefef;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .device .device-properties {
+    width: auto;
+    margin-right: 1rem;
+  }
+}
+
+.device .device-properties .device-property {
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #ccc;
+  display: flex;
+}
+
+.device .device-properties .device-property:last-child {
+  border-bottom: none;
+}
+
+.device .device-properties .device-property .device-property-label {
+  font-weight: bold;
+  width: 50%;
+  padding-right: 1rem;
+}
+
+.device .device-properties .device-property .device-property-value {
+  width: 50%;
+}
+
+.device .device-actions {
+  flex-grow: 1;
+  padding: 1rem;
+  background-color: #efefef;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .device .device-actions {
+    width: auto;
+  }
+}
+
+.device .device-actions .device-action {
+  background-color: #555;
+  margin-bottom: 0.5rem;
+}
+
+.device .device-actions .device-action .device-action-link {
+  padding: 1rem 0.5rem;
+  display: block;
+  color: #fff;
+  text-align: center;
+  font-weight: bold;
+  cursor: pointer;
+}

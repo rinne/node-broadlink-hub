@@ -1,0 +1,44 @@
+{
+	"name": "broadlink-wifi-switch-hub",
+	"version": "1.0.2",
+	"description": "Broadlink WiFi Switch Hub",
+	"main": "blhub.js",
+	"dependencies": {
+		"broadlink-core": "^1.0.0",
+		"bufferutil": "^4.0.1",
+		"ipaddr.js": "^1.9.1",
+		"optist": "^1.0.6",
+		"tr-apisrv": "^0.0.2",
+		"utf-8-validate": "^5.0.2",
+		"ws": "^7.2.3"
+	},
+	"scripts": {
+		"test": "node ./test/test.js"
+	},
+	"engines": {
+		"node": ">=8.0.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/rinne/node-broadlink-wifi-switch-hub.git"
+	},
+	"keywords": [
+		"broadlink",
+		"home",
+		"hassio",
+		"home assistant",
+		"homeassistant",
+		"home automation"
+	],
+	"author": {
+		"name": "Timo J. Rinne",
+		"email": "tri@iki.fi",
+		"url": "https://github.com/rinne/"
+	},
+	"license": "MIT",
+	"bugs": {
+		                
+		"url": "https://github.com/rinne/node-broadlink-wifi-switch-hub/issues"
+	},
+	"homepage": "https://github.com/rinne/node-broadlink-wifi-switch-hub"
+}
