@@ -429,7 +429,7 @@ function update(d) {
 			Object.keys(d.device.udata).forEach(function(k) {
 				updatePropertyValue(d.device.uid, k, d.device.udata[k]);
 			});	
-	} else {
+		} else {
 			log('Device ' + d.device.uid + ' is discovered');
 			let properties = [ { id: 'status', label: 'Status', value: 'reachable' }];
 			Object.keys(d.device.udata).forEach(function(k) {
@@ -441,7 +441,15 @@ function update(d) {
 			let child = createDeviceElement(d.device.uid, d.device.name, properties, actions);
 			let parent = document.getElementById('devices');
 			if (parent) {
-				parent.appendChild(child);
+				let nn = null;
+				Array.from(parent.children).some(function(elem) {
+					if (elem.firstChild.innerHTML > d.device.name) {
+						nn = elem;
+						return true;
+					}
+					return false;
+				});
+				parent.insertBefore(child, nn);
 			}
 		}
 		d.status = 'reachable';
