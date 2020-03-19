@@ -445,8 +445,8 @@ function update(d) {
 			let child = createDeviceElement(d.device.uid, d.device.name, properties, actions);
 			let parent = document.getElementById('devices');
 			if (parent) {
+				let nn = null;
 				try {
-					let nn = null;
 					Array.from(parent.children).some(function(elem) {
 						if (elem.firstChild.innerHTML > d.device.name) {
 							nn = elem;
