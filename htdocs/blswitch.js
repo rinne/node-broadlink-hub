@@ -111,6 +111,9 @@ function initialize() {
 		if (wsActive) {
 			return;
 		}
+		if (isDebugSet()) {
+			log('WebSocket connect: ' + wsUrl);
+		}
 		ws = new WebSocket(wsUrl);
 		ws.onopen = openCb;
 		ws.onmessage = messageCb;
@@ -277,7 +280,11 @@ function get(url, cb) {
 	var req = new XMLHttpRequest();
 	var completed = false;
 	var start = Date.now()
-	req.open("GET", url);
+	var method = 'GET';
+	if (isDebugSet()) {
+		log('Call (' + method + '): ' + url);
+	}
+	req.open(method, url);
 	req.send();
 	req.onerror = function(e) {
 		if (completed) {
@@ -365,19 +372,11 @@ function updatePropertyValue(uid, property, value) {
 	if (dev) {
 		switch (property) {
 		case 'name':
-			dev.name = value;
-			break;
 		case 'status':
-			dev.status = value;
-			break;
 		case 'address':
-			dev.address = value;
-			break;
 		case 'port':
-			dev.port = value;
-			break;
 		case 'mac':
-			dev.mac = value;
+			dev.device[property] = value;
 			break;
 		default:
 			dev.device.udata[property] = value;
@@ -426,6 +425,11 @@ function update(d) {
 			log('Device ' + d.device.uid + ' becomes reachable');
 			updatePropertyValue(d.device.uid, 'name', d.device.name);
 			updatePropertyValue(d.device.uid, 'status', 'reachable');
+			[ 'name', 'status', 'address', 'port' ].forEach(function(k) {
+				if (d.device[k] !== undefined) {
+					updatePropertyValue(d.device.uid, k, d.device[k]);
+				}
+			});
 			Object.keys(d.device.udata).forEach(function(k) {
 				updatePropertyValue(d.device.uid, k, d.device.udata[k]);
 			});	
@@ -441,14 +445,17 @@ function update(d) {
 			let child = createDeviceElement(d.device.uid, d.device.name, properties, actions);
 			let parent = document.getElementById('devices');
 			if (parent) {
-				let nn = null;
-				Array.from(parent.children).some(function(elem) {
-					if (elem.firstChild.innerHTML > d.device.name) {
-						nn = elem;
-						return true;
-					}
-					return false;
-				});
+				try {
+					let nn = null;
+					Array.from(parent.children).some(function(elem) {
+						if (elem.firstChild.innerHTML > d.device.name) {
+							nn = elem;
+							return true;
+						}
+						return false;
+					});
+				} catch(ignored) {
+				}
 				parent.insertBefore(child, nn);
 			}
 		}
