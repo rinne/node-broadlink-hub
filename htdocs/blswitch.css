@@ -17,7 +17,6 @@ div.name {
   margin-top: 0;
   margin-bottom: 1rem;
 }
-
 div.subtitle {
   width: 100%;
   text-align: left;
@@ -167,4 +166,12 @@ div.subtitle {
   text-align: center;
   font-weight: bold;
   cursor: pointer;
+}
+
+.device-info-label {
+  display: none;
+}
+
+.device-info {
+  display: none;
 }

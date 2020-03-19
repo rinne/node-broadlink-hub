@@ -151,6 +151,14 @@ function createDeviceElement(uid, name, properties, actions) {
 			 '">' +
 			 (name ? escapeHtml(name) : '?') +
 			 '</div>');
+ 	html += ('<div class="device-info" id="device.info.' +
+			 uid +
+			 '">' +
+			 '&#8505;' +
+			 '<span class="device-info-label" id="device.info.' +
+			 uid +
+			 '.label"></span>' +
+			 '</div>')
  	html += ('<div class="device-properties" id="' +
 			 uid +
 			 '.properties">');
@@ -367,22 +375,61 @@ function propertyValueString(property, value) {
 	return r;
 }
 
+function updateTooltip(uid) {
+	var dev = devs[uid];
+	if (! dev) {
+		return;
+	}
+	var tt = '';
+	if (dev.device['name'] !== undefined) {
+		tt += ((tt === '') ? '' : "\n") +'Name: ' + dev.device['name'];
+	}
+	if (dev.device['address'] !== undefined) {
+		tt += ((tt === '') ? '' : "\n") +'Address: ' + dev.device['address'];
+	}
+	if (dev.device['port'] !== undefined) {
+		tt += ((tt === '') ? '' : "\n") +'Port: ' + dev.device['port'];
+	}
+	if (dev.device['mac'] !== undefined) {
+		tt += ((tt === '') ? '' : "\n") +'MAC: ' + dev.device['mac'];
+	}
+	if (dev.device['devClass'] !== undefined) {
+		tt += ((tt === '') ? '' : "\n") +'Device Class: ' + dev.device['devClass'];
+	}
+	if (dev.device['devType'] !== undefined) {
+		tt += ((tt === '') ? '' : "\n") +'Device Type: ' + dev.device['devType'];
+	}
+	if (dev.device['devTypeId'] !== undefined) {
+		tt += ((tt === '') ? '' : "\n") +'Device Type Id: ' + dev.device['devTypeId'];
+	}
+	tt = '<pre>' + escapeHtml(tt) + '</pre>';
+	var eid = 'device.info.' + uid + '.label';
+	var elem = document.getElementById(eid);
+	if (elem) {
+		elem.innerHTML = tt;
+	}
+}
 function updatePropertyValue(uid, property, value) {
-	let dev = devs[uid];
+	var dev = devs[uid];
 	if (dev) {
 		switch (property) {
-		case 'name':
 		case 'status':
+			dev[property] = value;
+			break;
+		case 'name':
 		case 'address':
 		case 'port':
 		case 'mac':
+		case 'devClass':
+		case 'devType':
+		case 'devTypeId':
 			dev.device[property] = value;
 			break;
 		default:
 			dev.device.udata[property] = value;
 		}
 	}
-	let eid;
+	var eid;
 	switch (property) {
 	case 'name':
 		eid = 'device.name.' + uid;
@@ -401,6 +448,7 @@ function updatePropertyValue(uid, property, value) {
 			elem.innerHTML = escapeHtml(propertyValueString(property, value));
 		}
 	}
+	updateTooltip(uid);
 }
 
 function update(d) {
@@ -423,9 +471,8 @@ function update(d) {
 		}
 		if (devs[d.device.uid]) {
 			log('Device ' + d.device.uid + ' becomes reachable');
-			updatePropertyValue(d.device.uid, 'name', d.device.name);
 			updatePropertyValue(d.device.uid, 'status', 'reachable');
-			[ 'name', 'status', 'address', 'port' ].forEach(function(k) {
+			[ 'name', 'address', 'port', 'mac', 'devClass', 'devType', 'devTypeId' ].forEach(function(k) {
 				if (d.device[k] !== undefined) {
 					updatePropertyValue(d.device.uid, k, d.device[k]);
 				}
@@ -461,28 +508,26 @@ function update(d) {
 		}
 		d.status = 'reachable';
 		devs[d.device.uid] = d;
+		updateTooltip(d.device.uid);
 		break;
 	case 'unreachable':
 		log('Device ' + d.device.uid + ' becomes unreachable');
-		devs[d.device.uid].status = 'unreachable';
-		updatePropertyValue(d.device.uid, 'status', devs[d.device.uid].status);
+		updatePropertyValue(d.device.uid, 'status', 'unreachable');
 		break;
 	case 'update':
-		if (! (d && d.device && d.device.uid && devs[d.device.uid])) {
+		if (! (d && d.device && d.device.uid)) {
 			break;
 		}
-		if (! ((typeof(d.device.name) === 'string') || d.device.udata)) {
-			break;
-		}
-		log('Device ' + d.device.uid + ' update');
-		if (typeof(d.device.name) === 'string') {
-			devs[d.device.uid].device.name = d.device.name;
-			updatePropertyValue(d.device.uid, 'name', d.device.name);
-		}
-		Object.keys(d.device.udata).forEach(function(k) {
-			devs[d.device.uid].device.udata[k] = d.device.udata[k];
-			updatePropertyValue(d.device.uid, k, d.device.udata[k]);
+		[ 'name', 'address', 'port', 'mac', 'devClass', 'devType', 'devTypeId' ].forEach(function(k) {
+			if (d.device[k] !== undefined) {
+				updatePropertyValue(d.device.uid, k, d.device[k]);
+			}
 		});
+		if (d.device.udata) {
+			Object.keys(d.device.udata).forEach(function(k) {
+				updatePropertyValue(d.device.uid, k, d.device.udata[k]);
+			});
+		}
 		break;
 	case 'pong':
 		log('Pong!');
