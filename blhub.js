@@ -710,7 +710,8 @@ function wsCb(ws) {
 		let s = JSON.stringify({ status: 'hello',
 								 now: Date.now(),
 								 name: opt.value('name'),
-								 serverVersion: (d.packageData.name + ' ' + d.packageData.version) });
+								 serverName: d.packageData.name,
+								 serverVersion: d.packageData.version });
 		if (ws.readyState === WebSocket.OPEN) {
 			ws.send(s);
 		}
