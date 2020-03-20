@@ -59,6 +59,7 @@ const mimetype = require('./mimetype.js');
 					av.push('--update-interval=' + options.update_interval);
 				}
 				options.device_ips.forEach(function(x) { av.push('--ip=' + x); });
+				options.device_ip_ranges.forEach(function(x) { av.push('--ip-range=' + x); });
 			} else {
 				av.push(a);
 			}
@@ -109,6 +110,11 @@ var opt = ((new Optist())
 					 multi: true,
 					 hasArg: true,
 					 optArgCb: ou.ipv4 },
+				   { longName: 'ip-range',
+					 description: 'Range of IP addresses (max 100) the server probes for device',
+					 multi: true,
+					 hasArg: true,
+					 optArgCb: function(v) { return ipRangeExpandCb(v, 100); } },
 				   { longName: 'name',
 					 description: 'Name of the controller (e.g. "Home")',
 					 hasArg: true,
@@ -138,7 +144,7 @@ function broadcastSourceCb(value) {
 
 
 var d = {
-	ips: new Map(opt.value('ip').map(function(x) { return [ x, null ]; })),
+	ips: new Map(),
 	devs: new Map(),
 	failed: new Map(),
 	seen: new Map(),
@@ -156,6 +162,8 @@ var d = {
 						   bodyReadTimeoutMs: 5000,
 						   debug: debug
 						 });
+	opt.value('ip').forEach(function(a) { d.ips.set(a, null); });
+	opt.value('ip-range').forEach(function(ar) { ar.forEach(function(a) { d.ips.set(a, null); }); });
 	await periodic();
 })();
 
@@ -630,32 +638,34 @@ async function cb(r) {
 	error(404, 'Not found');
 }
 
-function ipRangeExpand(range) {
+function ipRangeExpandCb(range, maxAddresses) {
 	var m, s, e, i, c, r = [];
-	try {
-		if (! (typeof(range) === 'string')) {
-			throw new Error('Invalid range');
-		}
-		if (m = range.match(/^([^-]+)-([^-]+)$/)) {
-			s = m[1];
-			e = m[2];
-		} else {
-			s = e = range;
-		}
-		s = Buffer.from(ipaddr.IPv4.parse(s).toByteArray()).readUInt32BE();
-		e = Buffer.from(ipaddr.IPv4.parse(e).toByteArray()).readUInt32BE();
-		c = (e > s) ? 1 : -1;
-		i = s - c;
-		do {
-			i += c;
-			r.push(((i >> 24) & 0xff).toString() + '.' +
-				   ((i >> 16) & 0xff).toString() + '.' +
-				   ((i >> 8) & 0xff).toString() + '.' +
-				   (i & 0xff).toString());
-		} while(i != e);
-	} catch (e) {
-		throw e;
+	if (! (typeof(range) === 'string')) {
+		return undefined;
 	}
+	if (m = range.match(/^([^-]+)-([^-]+)$/)) {
+		s = m[1];
+		e = m[2];
+	} else {
+		s = e = range;
+	}
+	if (! (ipaddr.IPv4.isValid(s) && ipaddr.IPv4.isValid(e))) {
+		return undefined;
+	}
+	s = Buffer.from(ipaddr.IPv4.parse(s).toByteArray()).readUInt32BE();
+	e = Buffer.from(ipaddr.IPv4.parse(e).toByteArray()).readUInt32BE();
+	if ((maxAddresses !== undefined) && (maxAddresses !== null) && (Math.abs(e - s) > maxAddresses)) {
+		return undefined;
+	}
+	c = (e > s) ? 1 : -1;
+	i = s - c;
+	do {
+		i += c;
+		r.push(((i >> 24) & 0xff).toString() + '.' +
+			   ((i >> 16) & 0xff).toString() + '.' +
+			   ((i >> 8) & 0xff).toString() + '.' +
+			   (i & 0xff).toString());
+	} while(i != e);
 	return r;
 }
 
