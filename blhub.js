@@ -67,8 +67,12 @@ var d = {
 				if (options.update_interval) {
 					av.push('--update-interval=' + options.update_interval);
 				}
-				options.device_ips.forEach(function(x) { av.push('--ip=' + x); });
-				options.device_ip_ranges.forEach(function(x) { av.push('--ip-range=' + x); });
+				if (options.device_ips) {
+					options.device_ips.forEach(function(x) { av.push('--ip=' + x); });
+				}
+				if (options.device_ip_ranges) {
+					options.device_ip_ranges.forEach(function(x) { av.push('--ip-range=' + x); });
+				}
 			} else {
 				av.push(a);
 			}
