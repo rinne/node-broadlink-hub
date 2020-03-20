@@ -154,10 +154,16 @@ function createDeviceElement(uid, name, properties, actions) {
  	html += ('<div class="device-info" id="device.info.' +
 			 uid +
 			 '">' +
-			 '&#8505;' +
-			 '<span class="device-info-label" id="device.info.' +
+			 '<div class="device-info-label" id="device.info.' +
 			 uid +
-			 '.label"></span>' +
+			 '.label">' +
+			 '&#8505;' +
+			 '</div>' +
+			 '<span class="device-info-value" id="device.info.' +
+			 uid +
+			 '.value">' +
+			 '?' +
+			 '</span>' +
 			 '</div>')
  	html += ('<div class="device-properties" id="' +
 			 uid +
@@ -403,7 +409,7 @@ function updateTooltip(uid) {
 		tt += ((tt === '') ? '' : "\n") +'Device Type Id: ' + dev.device['devTypeId'];
 	}
 	tt = '<pre>' + escapeHtml(tt) + '</pre>';
-	var eid = 'device.info.' + uid + '.label';
+	var eid = 'device.info.' + uid + '.value';
 	var elem = document.getElementById(eid);
 	if (elem) {
 		elem.innerHTML = tt;

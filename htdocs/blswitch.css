@@ -87,12 +87,61 @@ div.subtitle {
 }
 
 .device {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   background: #ddd;
   padding: 1rem;
   border-radius: 0.25rem;
   margin-bottom: 0.5rem;
+}
+
+.device .device-info {
+  display: block;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  overflow: visible;
+  margin: 0;
+  padding: 0;
+}
+
+.device .device-info .device-info-label {
+  display: block;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  padding: 0.25rem;
+  font-size: 1.25em;
+  font-weight: bold;
+  text-decoration: none;
+  color: #fff;
+  text-align: center;
+  justify-content: center;
+  cursor: help;
+}
+
+.device .device-info .device-info-value {
+  display: block;
+  visibility: hidden;
+  z-index: 1;
+  position: absolute;
+  top: 2.0rem;
+  right: 0.25rem;
+  padding-top: 0.2rem;
+  padding-bottom: 0.2rem;
+  padding-left: 1rem;
+  padding-right: 2rem;
+  border: 2px solid #fff;
+  font-family: "Courier New", "Courier", monospace;
+  font-size: 0.8em;
+  text-align: left;
+  color: #000;
+  background: #ddd;
+}
+
+.device .device-info .device-info-label:hover ~ .device-info-value {
+  visibility: visible;
 }
 
 .device .device-name {
@@ -166,12 +215,4 @@ div.subtitle {
   text-align: center;
   font-weight: bold;
   cursor: pointer;
-}
-
-.device-info-label {
-  display: none;
-}
-
-.device-info {
-  display: none;
 }
