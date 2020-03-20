@@ -17,6 +17,15 @@ const sleeper = require('./sleeper.js');
 
 const mimetype = require('./mimetype.js');
 
+var d = {
+	ips: new Map(),
+	devs: new Map(),
+	failed: new Map(),
+	seen: new Map(),
+	wss: new WebSocket.Server({ noServer: true }),
+	packageData: JSON.parse(fs.readFileSync('./package.json', 'utf8'))
+};
+
 // Rewriting the command line parameters for the happy case that this
 // is actually run in Hassio addon instead of independently. In that
 // case, most of the command line parameters comes from addon
@@ -127,7 +136,7 @@ var opt = ((new Optist())
 					 hasArg: true,
 					 optArgCb: broadcastSourceCb }
 				 ])
-		   .help('broadlink-wifi-switch-hub')
+		   .help(d.packageData.name)
 		   .parse(undefined, 0, 0));
 
 var debug = opt.value('debug');
@@ -141,15 +150,6 @@ function broadcastSourceCb(value) {
 	}
 	return x ? value : undefined;
 }
-
-
-var d = {
-	ips: new Map(),
-	devs: new Map(),
-	failed: new Map(),
-	seen: new Map(),
-	wss: new WebSocket.Server({ noServer: true }),
-};
 
 (async function() {
 	d.wss.on('connection', wsCb);
@@ -707,7 +707,10 @@ function wsCb(ws) {
 		}
 	});
 	{
-		let s = JSON.stringify({ status: 'hello', now: Date.now(), name: opt.value('name') });
+		let s = JSON.stringify({ status: 'hello',
+								 now: Date.now(),
+								 name: opt.value('name'),
+								 serverVersion: (d.packageData.name + ' ' + d.packageData.version) });
 		if (ws.readyState === WebSocket.OPEN) {
 			ws.send(s);
 		}
