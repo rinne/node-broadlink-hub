@@ -4,7 +4,7 @@ In a Nutshell
 Broadlink WiFi Switch Hub
 
 This is a local Web-server implementing a simple control server for
-WiFi-connected Broadlink SP2, SP3, SP3C, SC1 and quite a few OEM
+WiFi-connected Broadlink SP2, SP3, SP3S, SC1 and quite a few OEM
 variations of the same theme. This is mainly targeted to be used in
 Hassio addon for controlling Broadlink switches, but there is also a
 simple built-in Web front in the system.

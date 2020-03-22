@@ -265,7 +265,7 @@ async function periodic() {
 						power = ret;
 						switch (dev.devClass) {
 						case 'sp3s':
-							return checkEnergy(dev, opt.value('device-timeout'));
+							return (power ? checkEnergy(dev, opt.value('device-timeout')) : 0.0);
 						}
 						return undefined;
 					})
@@ -328,7 +328,7 @@ async function periodic() {
 							power = ret;
 							switch (dev.devClass) {
 							case 'sp3s':
-								return checkEnergy(dev, opt.value('device-timeout'));
+								return (power ? checkEnergy(dev, opt.value('device-timeout')) : 0.0);
 							}
 							return undefined;
 						})
