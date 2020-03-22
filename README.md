@@ -30,6 +30,7 @@ Command Line Options
 ====================
 
 ```
+broadlink-wifi-switch-hub [<opt> ...]
       --listen-address=<arg>   IP address the server listens to
       --listen-port=<arg>      TCP port the server listens to
       --user=<arg>             Username for basic authentication
@@ -38,11 +39,11 @@ Command Line Options
       --device-timeout=<arg>   Timeout in milliseconds to wait for device to answer
       --update-interval=<arg>  Timeout in milliseconds between device polls
       --ip=<arg>               IP address the server probes for device
+      --ip-range=<arg>         Range of IP addresses (max 100) the server probes for device
       --name=<arg>             Name of the controller (e.g. "Home")
   -d  --debug                  Enable debug.
       --broadcast=<arg>        Local IP address or network interface name sending broadcasts
   -h  --help                   Show help and exit
-
 ```
 
 Web Front
