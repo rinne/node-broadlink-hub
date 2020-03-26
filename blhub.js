@@ -774,7 +774,7 @@ function haConf(dev) {
 	r += "\n";
     r += '    host: ' + dev.address;
 	r += "\n";
-    r += '    mac: ' + dev.mac;
+    r += '    mac: ' + "'" + dev.mac + "'";
 	r += "\n";
     r += '    retry: 10'
 	r += "\n";
