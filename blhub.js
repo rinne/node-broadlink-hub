@@ -598,6 +598,41 @@ async function cb(r) {
 		}
 		error(504, d.devs.has(r.params['uid']) ? 'Device timeout' : 'Device unreachable');
 		return;
+	case '/home-assistant-config':
+		switch (r.method) {
+		case 'GET':
+			break;
+		default:
+			error(405, 'Method not allowed.');
+			return;
+		}
+		{
+			let devs = [];
+			if (r.params['uid']) {
+				let dev = d.devs.get(r.params['uid']);
+				if (dev) {
+					devs.push(dev);
+				}
+			} else {
+				d.devs.forEach(function(dev) {
+					devs.push(dev);
+				});
+			}
+			if (devs.length < 1) {
+				error(404, 'Not found');
+				return;
+			}
+			devs.sort(function(a, b) {
+				return ((Buffer.from(ipaddr.IPv4.parse(a.address).toByteArray()).readUInt32BE()) -
+						(Buffer.from(ipaddr.IPv4.parse(b.address).toByteArray()).readUInt32BE())); });
+			res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+			res.write('switch:' + "\n");
+			devs.forEach(function(dev) {
+				res.write(haConf(dev));
+			});
+		}
+		res.end();
+		return;
 	default:
 		switch (r.method) {
 		case 'GET':
@@ -726,6 +761,24 @@ function wsCb(ws) {
 			ws.send(s);
 		}
 	});
+}
+
+function haConf(dev) {
+	dev = exportDev(dev);
+	var r = '';
+	r += '  - platform: broadlink';
+	r += "\n";
+	r += '    friendly_name: ' + "'" + dev.name.replace(/'/g, "''") + "'";
+	r += "\n";
+    r += '    type: ' + ((dev.devClass === 'sp3s') ? 'sp3' : 'sp2')
+	r += "\n";
+    r += '    host: ' + dev.address;
+	r += "\n";
+    r += '    mac: ' + dev.mac;
+	r += "\n";
+    r += '    retry: 10'
+	r += "\n";
+	return r;
 }
 
 function parseBasicAuth(s) {
