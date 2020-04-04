@@ -1,10 +1,10 @@
 {
 	"name": "broadlink-wifi-switch-hub",
-	"version": "1.1.3",
+	"version": "1.1.4",
 	"description": "Broadlink WiFi Switch Hub",
 	"main": "blhub.js",
 	"dependencies": {
-		"broadlink-core": "^1.0.2",
+		"broadlink-core": "^1.1.0",
 		"bufferutil": "^4.0.1",
 		"ipaddr.js": "^1.9.1",
 		"optist": "^1.0.6",
