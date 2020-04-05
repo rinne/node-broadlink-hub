@@ -10,6 +10,8 @@ const ipaddr = require('ipaddr.js');
 const Optist = require('optist');
 const ou = require('optist/util');
 
+const KeepTime = require('keeptime');
+
 const ApiSrv = require('tr-apisrv');
 const WebSocket = require('ws');
 
@@ -65,6 +67,9 @@ var d = {
 				if (options.device_timeout) {
 					av.push('--device-timeout=' + options.device_timeout);
 				}
+				if (options.power_set_timeout) {
+					av.push('--power-set-timeout=' + options.power_set_timeout);
+				}
 				if (options.update_interval) {
 					av.push('--update-interval=' + options.update_interval);
 				}
@@ -117,6 +122,11 @@ var opt = ((new Optist())
 					 hasArg: true,
 					 optArgCb: ou.integerWithLimitsCbFactory(1, 60000),
 					 defaultValue: '1000' },
+				   { longName: 'power-set-timeout',
+					 description: 'Timeout in milliseconds for device to react to power command',
+					 hasArg: true,
+					 optArgCb: ou.integerWithLimitsCbFactory(1, 60000),
+					 defaultValue: '10000' },
 				   { longName: 'update-interval',
 					 description: 'Timeout in milliseconds between device polls',
 					 hasArg: true,
@@ -580,8 +590,9 @@ async function cb(r) {
 			return;
 		}
 		{
-			let i, power = (r.params['power'] === 'on');
-			for (i = 0; i < 10; i++) {
+			let power = (r.params['power'] === 'on');
+			let kt = new KeepTime(true);
+			do {
 				let rs = (await setPower(r.params['uid'], power, opt.value('device-timeout'))
 						  .catch(function(e) {
 							  if (debug) {
@@ -604,7 +615,7 @@ async function cb(r) {
 					periodicRun();
 					return;
 				}
-			}
+			} while ((kt.get() * 1000) < opt.value('power-set-timeout'));
 		}
 		error(504, d.devs.has(r.params['uid']) ? 'Device timeout' : 'Device unreachable');
 		return;
