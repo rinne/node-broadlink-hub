@@ -476,7 +476,7 @@ function update(d) {
 			break;
 		}
 		if (devs[d.device.uid]) {
-			log('Device ' + d.device.uid + ' becomes reachable');
+			log('Device ' + d.device.uid + ' is reachable');
 			updatePropertyValue(d.device.uid, 'status', 'reachable');
 			[ 'name', 'address', 'port', 'mac', 'devClass', 'devType', 'devTypeId' ].forEach(function(k) {
 				if (d.device[k] !== undefined) {
@@ -517,13 +517,15 @@ function update(d) {
 		updateTooltip(d.device.uid);
 		break;
 	case 'unreachable':
-		log('Device ' + d.device.uid + ' becomes unreachable');
+		log('Device ' + d.device.uid + ' is unreachable');
 		updatePropertyValue(d.device.uid, 'status', 'unreachable');
 		break;
 	case 'update':
 		if (! (d && d.device && d.device.uid)) {
+			log('Update for unknown device ' + d.device.uid);
 			break;
 		}
+		log('Device ' + d.device.uid + ' is updated');
 		[ 'name', 'address', 'port', 'mac', 'devClass', 'devType', 'devTypeId' ].forEach(function(k) {
 			if (d.device[k] !== undefined) {
 				updatePropertyValue(d.device.uid, k, d.device[k]);
@@ -536,7 +538,9 @@ function update(d) {
 		}
 		break;
 	case 'pong':
-		log('Pong!');
+		if (isDebugSet()) {
+			log('Pong!');
+		}
 		break;
 	case 'error':
 		log('Error!');

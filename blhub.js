@@ -370,8 +370,7 @@ async function periodic() {
 							d.ips.set(dev.address, dev.uid);
 							d.devs.set(dev.uid, dev);
 							d.seen.set(dev.uid, now);
-							notify((unreachableNotificationScheduled(dev.uid) ? 'update' : 'reachable'),
-								   exportDev(dev));
+							notify('reachable', exportDev(dev));
 							return true;
 						})
 						.catch(function(e) {
