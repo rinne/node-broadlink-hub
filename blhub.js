@@ -355,7 +355,8 @@ async function periodic() {
 							d.ips.set(dev.address, dev.uid);
 							d.devs.set(dev.uid, dev);
 							d.seen.set(dev.uid, now);
-							notify('reachable', exportDev(dev));
+							notify((unreachableNotificationScheduled(dev.uid) ? 'update' : 'reachable'),
+								   exportDev(dev));
 							return true;
 						})
 						.catch(function(e) {
@@ -687,6 +688,10 @@ async function cb(r) {
 }
 
 
+function unreachableNotificationScheduled(uid) {
+	return d.unreachableNotifier.has(uid);
+}
+
 function scheduleUnreachableNotification(uid) {
 	cancelUnreachableNotification(uid);
 	function notifyUnreachable() {
@@ -696,7 +701,7 @@ function scheduleUnreachableNotification(uid) {
 		}
 		notify('unreachable', { uid: uid });
 	}
-	timeout = setTimeout(notifyUnreachable, opt.value('unreachable-grace-time'));
+	d.unreachableNotifier.set(uid, setTimeout(notifyUnreachable, opt.value('unreachable-grace-time')));
 }
 
 function cancelUnreachableNotification(uid) {
@@ -705,7 +710,7 @@ function cancelUnreachableNotification(uid) {
 		timeout = d.unreachableNotifier.get(uid);
 		if (timeout) {
 			clearTimeout(timeout);
-			timeout = undefimed;
+			timeout = undefined;
 			d.unreachableNotifier.delete(uid);
 		}
 	} else {
