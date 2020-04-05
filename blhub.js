@@ -29,6 +29,11 @@ var d = {
 	unreachableNotifier: new Map()
 };
 
+if ((process.argv.length == 3) && (process.argv[2] === '--version')) {
+	console.log(d.packageData.name + ' version ' + d.packageData.version);
+	process.exit(0);
+}
+
 // Rewriting the command line parameters for the happy case that this
 // is actually run in Hassio addon instead of independently. In that
 // case, most of the command line parameters comes from addon
