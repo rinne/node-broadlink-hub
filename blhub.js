@@ -23,7 +23,8 @@ var d = {
 	failed: new Map(),
 	seen: new Map(),
 	wss: new WebSocket.Server({ noServer: true }),
-	packageData: JSON.parse(fs.readFileSync('./package.json', 'utf8'))
+	packageData: JSON.parse(fs.readFileSync('./package.json', 'utf8')),
+	unreachableNotifier: new Map()
 };
 
 // Rewriting the command line parameters for the happy case that this
@@ -66,6 +67,9 @@ var d = {
 				}
 				if (options.update_interval) {
 					av.push('--update-interval=' + options.update_interval);
+				}
+				if (options.unreachable_grace_time) {
+					av.push('--unreachable-grace-time=' + options.unreachable_grace_time);
 				}
 				if (options.device_ips) {
 					options.device_ips.forEach(function(x) { av.push('--ip=' + x); });
@@ -115,6 +119,11 @@ var opt = ((new Optist())
 					 defaultValue: '1000' },
 				   { longName: 'update-interval',
 					 description: 'Timeout in milliseconds between device polls',
+					 hasArg: true,
+					 optArgCb: ou.integerWithLimitsCbFactory(1, 60000),
+					 defaultValue: '10000' },
+				   { longName: 'unreachable-grace-time',
+					 description: 'Delay in milliseconds before device going unreachable is notified',
 					 hasArg: true,
 					 optArgCb: ou.integerWithLimitsCbFactory(1, 60000),
 					 defaultValue: '10000' },
@@ -295,7 +304,7 @@ async function periodic() {
 						}
 						d.devs.delete(dev.uid);
 						d.ips.set(dev.address, null);
-						notify('unreachable', { uid: dev.uid });
+						scheduleUnreachableNotification(dev.uid)
 						dev.close();
 						d.failed.set(dev.uid, dev);
 						return false;
@@ -313,7 +322,7 @@ async function periodic() {
 								d.devs.delete(dev.uid);
 								d.ips.set(old.address, null);
 								old.close();
-								notify('unreachable', { uid: old.uid });
+								scheduleUnreachableNotification(old.uid)
 							}
 							dev.udata = { lastSeen: null };
 							switch (dev.devClass) {
@@ -675,6 +684,33 @@ async function cb(r) {
 		}
 	}
 	error(404, 'Not found');
+}
+
+
+function scheduleUnreachableNotification(uid) {
+	cancelUnreachableNotification(uid);
+	function notifyUnreachable() {
+		d.unreachableNotifier.delete(uid);
+		if (d.devs.has(uid)) {
+			return;
+		}
+		notify('unreachable', { uid: uid });
+	}
+	timeout = setTimeout(notifyUnreachable, opt.value('unreachable-grace-time'));
+}
+
+function cancelUnreachableNotification(uid) {
+	var timeout;
+	if (uid) {
+		timeout = d.unreachableNotifier.get(uid);
+		if (timeout) {
+			clearTimeout(timeout);
+			timeout = undefimed;
+			d.unreachableNotifier.delete(uid);
+		}
+	} else {
+		Array.from(d.unreachableNotifier.keys()).forEach(cancelUnreachableNotification);
+	}
 }
 
 function ipRangeExpandCb(range, maxAddresses) {

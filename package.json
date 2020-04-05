@@ -1,6 +1,6 @@
 {
 	"name": "broadlink-wifi-switch-hub",
-	"version": "1.3.0",
+	"version": "1.4.0",
 	"description": "Broadlink WiFi Switch Hub",
 	"main": "blhub.js",
 	"dependencies": {
