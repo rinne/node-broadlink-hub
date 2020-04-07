@@ -21,6 +21,7 @@ const mimetype = require('./mimetype.js');
 
 var d = {
 	ips: new Map(),
+	ipsSeen: new Set(),
 	devs: new Map(),
 	failed: new Map(),
 	seen: new Map(),
@@ -332,6 +333,7 @@ async function periodic() {
 						})
 						.then(function(ret) {
 							dev = ret;
+							d.ipsSeen.add(dev.address);
 							let old = d.devs.get(dev.uid);
 							if (old) {
 								d.devs.delete(dev.uid);

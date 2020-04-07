@@ -1,7 +1,7 @@
 {
-	"name": "broadlink-wifi-switch-hub",
-	"version": "1.5.1",
-	"description": "Broadlink WiFi Switch Hub",
+	"name": "broadlink-hub",
+	"version": "2.0.0",
+	"description": "Broadlink Hub",
 	"main": "blhub.js",
 	"dependencies": {
 		"broadlink-core": "^1.1.0",
@@ -21,7 +21,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/rinne/node-broadlink-wifi-switch-hub.git"
+		"url": "git+https://github.com/rinne/node-broadlink-hub.git"
 	},
 	"keywords": [
 		"broadlink",
@@ -38,7 +38,7 @@
 	},
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/rinne/node-broadlink-wifi-switch-hub/issues"
+		"url": "https://github.com/rinne/node-broadlink-hub/issues"
 	},
-	"homepage": "https://github.com/rinne/node-broadlink-wifi-switch-hub"
+	"homepage": "https://github.com/rinne/node-broadlink-hub"
 }
