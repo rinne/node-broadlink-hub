@@ -1,7 +1,8 @@
 In a Nutshell
 =============
 
-Broadlink WiFi Switch Hub
+Broadlink Hub
+-------------
 
 This is a local Web-server implementing a simple control server for
 WiFi-connected Broadlink SP2, SP3, SP3S, SC1 and quite a few OEM
