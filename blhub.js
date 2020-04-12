@@ -241,6 +241,7 @@ async function broadcast() {
 				console.log('Discovered class ' + dev.devClass + ' device at ' + dev.address);
 			}
 			d.ips.set(dev.address, null);
+			periodicRun();
 		}
 	});
 	var st = 60000;
@@ -280,6 +281,7 @@ async function periodic() {
 					.then(function() {
 						switch (dev.devClass) {
 						case 'sp2':
+						case 'sc1':
 						case 'sp3':
 						case 'sp3s':
 							return checkPower(dev, opt.value('device-timeout'));
@@ -344,6 +346,7 @@ async function periodic() {
 							dev.udata = { lastSeen: null };
 							switch (dev.devClass) {
 							case 'sp2':
+							case 'sc1':
 							case 'sp3':
 							case 'sp3s':
 								return checkPower(dev, opt.value('device-timeout'));
@@ -423,6 +426,7 @@ async function setPower(dev, power, timeoutMs) {
 		r = await dev.call(0x66, p, timeoutMs);
 		break;
 	case 'sp2':
+	case 'sc1':
 	case 'sp3':
 	case 'sp3s':
 		p = Buffer.alloc(16);
@@ -482,6 +486,7 @@ async function checkPower(dev, timeoutMs) {
 	}
 	switch (dev.devClass) {
 	case 'sp2':
+	case 'sc1':
 	case 'sp3':
 	case 'sp3s':
 		break;
@@ -655,7 +660,10 @@ async function cb(r) {
 			res.setHeader('Content-Type', 'text/plain; charset=utf-8');
 			res.write('switch:' + "\n");
 			devs.forEach(function(dev) {
-				res.write(haConf(dev));
+				let cnf = haConf(dev);
+				if (cnf) {
+					res.write(cnf);
+				}
 			});
 		}
 		res.end();
@@ -822,7 +830,20 @@ function wsCb(ws) {
 }
 
 function haConf(dev) {
-	dev = exportDev(dev);
+	switch (dev.devClass) {
+	case 'sp2':
+	case 'sc1':
+	case 'sp3':
+	case 'sp3s':
+		dev = exportDev(dev);
+		break;
+	default:
+		dev = undefined;
+		return;
+	}
+	if (! dev) {
+		return undefined;
+	}
 	var r = '';
 	r += '  - platform: broadlink';
 	r += "\n";
