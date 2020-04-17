@@ -68,7 +68,9 @@ if ((process.argv.length == 3) && (process.argv[2] === '--version')) {
 					av.push('--password=' + options.password);
 				}
 				if (options.password_hash) {
-					av.push('--password-hash=' + options.password_hash);
+					if (options.password_hash.toLowerCase() !== 'none') {
+						av.push('--password-hash=' + options.password_hash);
+					}
 				}
 				if (options.device_timeout) {
 					av.push('--device-timeout=' + options.device_timeout);
