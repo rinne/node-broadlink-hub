@@ -431,6 +431,7 @@ async function setPower(dev, power, timeoutMs) {
 	case 'sc1':
 	case 'sp3':
 	case 'sp3s':
+	case 'mcb1':
 		p = Buffer.alloc(16);
         p[0] = 2;
 		p[4] = power ? 1 : 0;
@@ -491,6 +492,7 @@ async function checkPower(dev, timeoutMs) {
 	case 'sc1':
 	case 'sp3':
 	case 'sp3s':
+	case 'mcb1':
 		break;
 	default:
 		throw new Error('Power check not supported by device class');
@@ -837,6 +839,7 @@ function haConf(dev) {
 	case 'sc1':
 	case 'sp3':
 	case 'sp3s':
+	case 'mcb1':
 		dev = exportDev(dev);
 		break;
 	default:
