@@ -493,8 +493,16 @@ function update(d) {
 				let p = { id: k, label: propertyLabel(k), value: propertyValueString(k, d.device.udata[k]) };
 				properties.push(p);
 			});
-			let actions = [ { id: 'power-on', label: 'Power ON', action: 'actionPowerOn' },
-							{ id: 'power-off', label: 'Power OFF', action: 'actionPowerOff' } ];
+			let actions = [];
+			switch (d.device.devClass) {
+			case 'sp2':
+			case 'sc1':
+			case 'sp3':
+			case 'sp3s':
+				actions.push( { id: 'power-on', label: 'Power ON', action: 'actionPowerOn' } );
+				actions.push( { id: 'power-off', label: 'Power OFF', action: 'actionPowerOff' } );
+				break;
+			}
 			let child = createDeviceElement(d.device.uid, d.device.name, properties, actions);
 			let parent = document.getElementById('devices');
 			if (parent) {

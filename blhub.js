@@ -276,7 +276,7 @@ async function periodic() {
 	periodicTimeout = null;	
 	var pl = [];
 	function update(uid, ip) {
-		let dev, power, energy;
+		let dev, power, energy, sensors;
 		if (uid) {
 			dev = d.devs.get(uid);
 			pl.push(sleeper(1, 200)
@@ -287,14 +287,23 @@ async function periodic() {
 						case 'sp3':
 						case 'sp3s':
 							return checkPower(dev, opt.value('device-timeout'));
+						case 'a1':
+							return checkSensors(dev, opt.value('device-timeout'));
 						}
 						return undefined;
 					})
 					.then(function(ret) {
-						power = ret;
 						switch (dev.devClass) {
+						case 'sp2':
+						case 'sc1':
+						case 'sp3':
+							power = ret;
+							return undefined;
 						case 'sp3s':
 							return (power ? checkEnergy(dev, opt.value('device-timeout')) : 0.0);
+						case 'a1':
+							sensors = ret;
+							return undefined;
 						}
 						return undefined;
 					})
@@ -312,6 +321,14 @@ async function periodic() {
 						if ((energy !== undefined) && (energy != dev.udata.energy)) {
 							dev.udata.energy = udata.energy = energy;
 							update = true;
+						}
+						if (sensors !== undefined) {
+							Object.keys(sensors).forEach(function(k) {
+								if (dev.udata[k] !== sensors[k]) {
+									dev.udata[k] = sensors[k];
+									update = true;
+								}
+							});
 						}
 						if (update) {
 							notify('update', { uid: dev.uid, udata: udata });
@@ -352,14 +369,23 @@ async function periodic() {
 							case 'sp3':
 							case 'sp3s':
 								return checkPower(dev, opt.value('device-timeout'));
+							case 'a1':
+								return checkSensors(dev, opt.value('device-timeout'));
 							}
 							return undefined;
 						})
 						.then(function(ret) {
-							power = ret;
 							switch (dev.devClass) {
+							case 'sp2':
+							case 'sc1':
+							case 'sp3':
+								power = ret;
+								return undefined;
 							case 'sp3s':
 								return (power ? checkEnergy(dev, opt.value('device-timeout')) : 0.0);
+							case 'a1':
+								sensors = ret;
+								return undefined;
 							}
 							return undefined;
 						})
@@ -373,6 +399,11 @@ async function periodic() {
 							}
 							if (energy !== undefined) {
 								dev.udata.energy = energy;
+							}
+							if (sensors !== undefined) {
+								Object.keys(sensors).forEach(function(k) {
+									dev.udata[k] = sensors[k];
+								});
 							}
 							d.ips.set(dev.address, dev.uid);
 							d.devs.set(dev.uid, dev);
@@ -511,6 +542,89 @@ async function checkPower(dev, timeoutMs) {
 		throw new Error('Unexpected response parameter to power status check');
 	}
 	return (r.payload[4] ? true : false);
+}
+
+async function checkSensors(dev, timeoutMs) {
+	if (typeof(dev) === 'string') {
+		dev = d.devs.get(dev);
+		if (! dev) {
+			throw new Error('Device not online');
+		}
+	}
+	switch (dev.devClass) {
+	case 'a1':
+		break;
+	default:
+		throw new Error('Sensor check not supported by device class');
+	}
+    var p = Buffer.alloc(16);
+    p[0] = 1;
+    var r = await dev.call(0x6a, p, timeoutMs);
+	if (r.status !== 'ok') {
+		throw new Error('Error response from device');
+	}
+	if (r.command != 0x3ee) {
+		throw new Error('Unexpected response to sensor check');
+	}
+	if (r.payload.length < 16) {
+		throw new Error('Truncated response to sensor check');
+	}
+	var rv = {
+		temperature: (r.payload[4] * 10 + r.payload[5]) / 10,
+		humidity: (r.payload[6] * 10 + r.payload[7]) / 10
+	};
+	switch (r.payload[8]) {
+	case 0:
+		rv.lightValue = 0;
+		rv.light = 'dark';
+		break;
+	case 1:
+		rv.lightValue = 1;
+		rv.light = 'dim';
+		break;
+	case 2:
+		rv.lightValue = 2;
+		rv.light = 'normal';
+		break;
+	case 3:
+		rv.lightValue = 3;
+		rv.light = 'bright';
+		break;
+	}
+	switch (r.payload[10]) {
+	case 0:
+		rv.airQualityValue = 0;
+		rv.airQuality = 'excellent';
+		break;
+	case 1:
+		rv.airQualityValue = 1;
+		rv.airQuality = 'good';
+		break;
+	case 2:
+		rv.airQualityValue = 2;
+		rv.airQuality = 'normal';
+		break;
+	case 3:
+		rv.airQualityValue = 3;
+		rv.airQuality = 'bad';
+		break;
+	}
+	switch (r.payload[12]) {
+	case 0:
+		rv.noiseValue = 0;
+		rv.noise = 'quiet';
+		break;
+	case 1:
+		rv.noiseValue = 1;
+		rv.noise = 'normal';
+		break;
+	case 2:
+		rv.noiseValue = 2;
+		rv.noise = 'noisy';
+		break;
+	}
+	console.log(rv);
+	return rv;
 }
 
 async function authCb(r) {
