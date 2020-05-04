@@ -287,28 +287,29 @@ async function periodic() {
 						case 'sp3':
 						case 'sp3s':
 							return checkPower(dev, opt.value('device-timeout'));
+						}
+						return undefined;
+					})
+					.then(function(ret) {
+						power = ret;
+						switch (dev.devClass) {
+						case 'sp3s':
+							return (power ? checkEnergy(dev, opt.value('device-timeout')) : 0.0);
+						}
+						return undefined;
+					})
+					.then(function(ret) {
+						energy = ret;
+						switch (dev.devClass) {
 						case 'a1':
 							return checkSensors(dev, opt.value('device-timeout'));
 						}
 						return undefined;
 					})
 					.then(function(ret) {
-						switch (dev.devClass) {
-						case 'sp2':
-						case 'sc1':
-						case 'sp3':
-							power = ret;
-							return undefined;
-						case 'sp3s':
-							return (power ? checkEnergy(dev, opt.value('device-timeout')) : 0.0);
-						case 'a1':
-							sensors = ret;
-							return undefined;
-						}
-						return undefined;
+						sensors = ret;
 					})
-					.then(function(ret) {
-						energy = ret;
+					.then(function() {
 						let now = Date.now();
 						dev.udata.lastSeen = now;
 						d.seen.set(dev.uid, Date.now());
@@ -363,34 +364,37 @@ async function periodic() {
 								scheduleUnreachableNotification(old.uid)
 							}
 							dev.udata = { lastSeen: null };
+						})
+						.then(function() {
 							switch (dev.devClass) {
 							case 'sp2':
 							case 'sc1':
 							case 'sp3':
 							case 'sp3s':
 								return checkPower(dev, opt.value('device-timeout'));
+							}
+							return undefined;
+						})
+						.then(function(ret) {
+							power = ret;
+							switch (dev.devClass) {
+							case 'sp3s':
+								return (power ? checkEnergy(dev, opt.value('device-timeout')) : 0.0);
+							}
+							return undefined;
+						})
+						.then(function(ret) {
+							energy = ret;
+							switch (dev.devClass) {
 							case 'a1':
 								return checkSensors(dev, opt.value('device-timeout'));
 							}
 							return undefined;
 						})
 						.then(function(ret) {
-							switch (dev.devClass) {
-							case 'sp2':
-							case 'sc1':
-							case 'sp3':
-								power = ret;
-								return undefined;
-							case 'sp3s':
-								return (power ? checkEnergy(dev, opt.value('device-timeout')) : 0.0);
-							case 'a1':
-								sensors = ret;
-								return undefined;
-							}
-							return undefined;
+							sensors = ret;
 						})
-						.then(function(ret) {
-							energy = ret;
+						.then(function() {
 							let now = Date.now();
 							dev.udata.lastSeen = now;
 							d.seen.set(dev.uid, Date.now());
