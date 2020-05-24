@@ -1003,8 +1003,10 @@ function checkPassword(password) {
 		let ret = false;
 		try {
 			let raw = require('crypto').createHash(opt.value('password-hash')).update(password).digest();
-			ret = ((raw.toString('hex').toLowerCase() === opt.value('password').toLowerCase()) ||
-				   (raw.toString('base64') === opt.value('password')));
+			ret = ((raw.toString('hex').toLowerCase() ===
+					opt.value('password').toLowerCase()) ||
+				   (raw.toString('base64').replace(/[^a-zA-Z0-9+/]/g, '') ===
+					opt.value('password').replace(/[^a-zA-Z0-9+/]/g, '')));
 		} catch(e) {
 			ret = false;
 		}
