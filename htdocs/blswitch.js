@@ -499,6 +499,7 @@ function update(d) {
 			case 'sc1':
 			case 'sp3':
 			case 'sp3s':
+			case 'mcb1':
 				actions.push( { id: 'power-on', label: 'Power ON', action: 'actionPowerOn' } );
 				actions.push( { id: 'power-off', label: 'Power OFF', action: 'actionPowerOff' } );
 				break;

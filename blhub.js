@@ -5,6 +5,7 @@ const crypto = require('crypto');
 
 const broadlinkProbe = require('broadlink-core');
 const findBroadcastAddresses = require('broadlink-core/util.js').findBroadcastAddresses;
+const checksum = require('broadlink-core/util.js').checksum;
 const ipaddr = require('ipaddr.js');
 
 const Optist = require('optist');
@@ -286,6 +287,8 @@ async function periodic() {
 						case 'sc1':
 						case 'sp3':
 						case 'sp3s':
+						case 'sp4':
+						case 'mcb1':
 							return checkPower(dev, opt.value('device-timeout'));
 						}
 						return undefined;
@@ -371,6 +374,8 @@ async function periodic() {
 							case 'sc1':
 							case 'sp3':
 							case 'sp3s':
+							case 'sp4':
+							case 'mcb1':
 								return checkPower(dev, opt.value('device-timeout'));
 							}
 							return undefined;
@@ -471,6 +476,12 @@ async function setPower(dev, power, timeoutMs) {
 		p[4] = power ? 1 : 0;
 		r = await dev.call(0x6a, p, timeoutMs);
 		break;
+	case 'sp4':
+	case 'mcb1':
+		p = sp4Encode(2, { pwr: (power ? 1 : 0), indicator: (power ? 1 : 0) });
+		r = await dev.call(0x6a, p, timeoutMs);
+		console.log(sp4Decode(r.payload));
+		break;
 	default:
 		throw new Error('Power set not supported by device class');
 	}
@@ -521,18 +532,24 @@ async function checkPower(dev, timeoutMs) {
 			throw new Error('Device not online');
 		}
 	}
+	var p;
 	switch (dev.devClass) {
 	case 'sp2':
 	case 'sc1':
 	case 'sp3':
 	case 'sp3s':
+		p = Buffer.alloc(16);
+		p[0] = 1;
+		break;
+	case 'sp4':
+	case 'mcb1':
+		p = sp4Encode(1, {});
 		break;
 	default:
 		throw new Error('Power check not supported by device class');
 	}
-    var p = Buffer.alloc(16);
-    p[0] = 1;
     var r = await dev.call(0x6a, p, timeoutMs);
+	console.log(JSON.stringify(r));
 	if (r.status !== 'ok') {
 		throw new Error('Error response from device');
 	}
@@ -542,10 +559,28 @@ async function checkPower(dev, timeoutMs) {
 	if (r.payload.length < 16) {
 		throw new Error('Truncated response to power status check');
 	}
-	if (r.payload[0] != 1) {
-		throw new Error('Unexpected response parameter to power status check');
+	switch (dev.devClass) {
+	case 'sp2':
+	case 'sc1':
+	case 'sp3':
+	case 'sp3s':
+		if (r.payload[0] != 1) {
+			throw new Error('Unexpected response parameter to power status check');
+		}
+		return (r.payload[4] ? true : false);
+	case 'sp4':
+	case 'mcb1':
+		{
+			let d = sp4Decode(r.payload);
+			if (d.pwr === 0) {
+				return false;
+			}
+			if (d.pwr === 1) {
+				return true;
+			}
+			throw new Error('Power status missing from response object');
+		}
 	}
-	return (r.payload[4] ? true : false);
 }
 
 async function checkSensors(dev, timeoutMs) {
@@ -629,6 +664,42 @@ async function checkSensors(dev, timeoutMs) {
 	}
 	console.log(rv);
 	return rv;
+}
+
+function sp4Encode(flag, data) {
+	console.log(data);
+	var s = JSON.stringify(data);
+	if (s.length > 8192) {
+		throw new Error('Oversized SP4 object');
+	}
+	var p = Buffer.concat([ Buffer.from([ 0xa5, 0xa5, 0x5a, 0x5a, 0, 0, flag, 0x0b,
+										  s.length & 0xff, s.length >> 8, 0, 0 ]),
+							Buffer.from(s, 'utf8') ]);
+	var crc = checksum(p, 0xbeaf);
+	p[4] = crc & 0xff;
+	p[5] = crc >> 8;
+	return p;
+}
+
+function sp4Decode(p) {
+	if (p.len < 16) {
+		throw new Error('Truncated SP4 input');
+	}
+	let crc = p.readUInt16LE(4);
+	p[4] = 0;
+	p[5] = 0;
+	if (crc != checksum(p, 0xbeaf)) {
+		return err(Error('CRC mismatch in SP4 payload checksum'));
+	}
+	var len = (p[9] * 256) + p[8];
+	if (p.len < (len + 12)) {
+		throw new Error('Truncated SP4 input (JSON length overflow)');
+	}
+	var r = JSON.parse(p.slice(12, 12 + len));
+	if (! (r && (typeof(r) === 'object'))) {
+		throw new Error('Invalid SP4 JSON response object');
+	}
+	return r;
 }
 
 async function authCb(r) {
