@@ -480,7 +480,6 @@ async function setPower(dev, power, timeoutMs) {
 	case 'mcb1':
 		p = sp4Encode(2, { pwr: (power ? 1 : 0), indicator: (power ? 1 : 0) });
 		r = await dev.call(0x6a, p, timeoutMs);
-		console.log(sp4Decode(r.payload));
 		break;
 	default:
 		throw new Error('Power set not supported by device class');
@@ -549,7 +548,6 @@ async function checkPower(dev, timeoutMs) {
 		throw new Error('Power check not supported by device class');
 	}
     var r = await dev.call(0x6a, p, timeoutMs);
-	console.log(JSON.stringify(r));
 	if (r.status !== 'ok') {
 		throw new Error('Error response from device');
 	}
@@ -662,12 +660,10 @@ async function checkSensors(dev, timeoutMs) {
 		rv.noise = 'noisy';
 		break;
 	}
-	console.log(rv);
 	return rv;
 }
 
 function sp4Encode(flag, data) {
-	console.log(data);
 	var s = JSON.stringify(data);
 	if (s.length > 8192) {
 		throw new Error('Oversized SP4 object');
